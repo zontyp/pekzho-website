@@ -18,23 +18,37 @@ function Blog() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const formatDate = (date: string) => new Date(date).toDateString();
+
+  const featuredCardClass =
+    "mb-14 grid overflow-hidden rounded-[32px] bg-white shadow-lg transition hover:shadow-xl lg:grid-cols-2";
+
+  const postCardClass =
+    "group rounded-3xl border border-[#ecd7a4] bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg";
+
+  const categoryBadgeClass =
+    "inline-block rounded-full bg-[#f4e4be] font-semibold text-[#895a06]";
+
   useEffect(() => {
-    fetch("/blog-data/posts.json")
-      .then((res) => {
+    const loadPosts = async () => {
+      try {
+        const res = await fetch("/blog-data/posts.json");
+
         if (!res.ok) {
           throw new Error("posts.json file not found");
         }
-        return res.json();
-      })
-      .then((data: Post[]) => {
+
+        const data: Post[] = await res.json();
         setPosts(data);
-        setLoading(false);
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("Failed to load blog posts:", err);
         setError("Blog posts load thai na sakya.");
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    loadPosts();
   }, []);
 
   if (loading) {
@@ -64,15 +78,13 @@ function Blog() {
             Our Blog
           </h1>
           <p className="mx-auto max-w-2xl text-lg text-gray-700">
-            Explore insights, guides, AI tips, website ideas, and growth content for modern businesses.
+            Explore insights, guides, AI tips, website ideas, and growth content
+            for modern businesses.
           </p>
         </div>
 
         {featuredPost && (
-          <Link
-            to={`/blog/${featuredPost.slug}`}
-            className="mb-14 grid overflow-hidden rounded-[32px] bg-white shadow-lg transition hover:shadow-xl lg:grid-cols-2"
-          >
+          <Link to={`/blog/${featuredPost.slug}`} className={featuredCardClass}>
             {featuredPost.image && (
               <img
                 src={featuredPost.image}
@@ -83,7 +95,9 @@ function Blog() {
 
             <div className="flex flex-col justify-center p-8 sm:p-12">
               {featuredPost.category && (
-                <span className="mb-4 inline-block rounded-full bg-[#f4e4be] px-4 py-1 text-sm font-semibold text-[#895a06]">
+                <span
+                  className={`${categoryBadgeClass} mb-4 px-4 py-1 text-sm`}
+                >
                   {featuredPost.category}
                 </span>
               )}
@@ -95,7 +109,7 @@ function Blog() {
               <p className="mb-5 text-gray-700">{featuredPost.description}</p>
 
               <p className="text-sm text-gray-500">
-                {new Date(featuredPost.date).toDateString()}
+                {formatDate(featuredPost.date)}
                 {featuredPost.author && ` • By ${featuredPost.author}`}
               </p>
             </div>
@@ -107,7 +121,7 @@ function Blog() {
             <Link
               key={post.slug}
               to={`/blog/${post.slug}`}
-              className="group rounded-3xl border border-[#ecd7a4] bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+              className={postCardClass}
             >
               {post.image && (
                 <img
@@ -118,7 +132,9 @@ function Blog() {
               )}
 
               {post.category && (
-                <span className="mb-3 inline-block rounded-full bg-[#f4e4be] px-3 py-1 text-xs font-semibold text-[#895a06]">
+                <span
+                  className={`${categoryBadgeClass} mb-3 px-3 py-1 text-xs`}
+                >
                   {post.category}
                 </span>
               )}
@@ -129,9 +145,7 @@ function Blog() {
 
               <p className="mb-4 text-gray-700">{post.description}</p>
 
-              <p className="text-sm text-gray-500">
-                {new Date(post.date).toDateString()}
-              </p>
+              <p className="text-sm text-gray-500">{formatDate(post.date)}</p>
             </Link>
           ))}
         </div>
